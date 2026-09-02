@@ -413,6 +413,8 @@
         if (document.getElementById('website').value) return;
 
         var data = Object.fromEntries(new FormData(form).entries());
+        data.area_of_residence = data.location || '';
+        data.referral_source = data.heard_about || '';
         data.guest_count = withOthers.checked ? Number(data.guest_count || 1) : 0;
         data.updates_consent = document.getElementById('updatesConsent').checked;
         data.event_slug = 'grace-encounter-2026';
@@ -423,7 +425,7 @@
         submitButton.textContent = 'Registering…';
 
         try {
-          var response = await fetch('/api/grace-encounter-register', {
+          var response = await fetch('https://wqyyphwmoznjnweifllo.supabase.co/functions/v1/grace-encounter-register', {
             method: 'POST',
             headers: {'Content-Type':'application/json','Accept':'application/json'},
             body: JSON.stringify(data)
@@ -433,7 +435,7 @@
           try { result = await response.json(); } catch (_) {}
 
           if (!response.ok) {
-            throw new Error(result.message || 'Registration could not be completed right now.');
+            throw new Error(result.error || result.message || 'Registration could not be completed right now.');
           }
 
           registrationId.textContent = result.registration_id || makeFallbackId();
