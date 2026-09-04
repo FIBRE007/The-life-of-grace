@@ -11,6 +11,13 @@ if (toggle && sidebar) {
   });
 }
 
+// Keep the older Life of Grace pages pointing to their new landing page.
+const bookKey = document.body.getAttribute('data-book') || 'lifeOfGrace';
+const brand = document.querySelector('.sidebar .brand');
+if (brand && bookKey === 'lifeOfGrace' && brand.getAttribute('href') === '../index.html') {
+  brand.setAttribute('href', '../life-of-grace/');
+}
+
 // Reading progress bar
 const track = document.createElement('div');
 track.className = 'progress-track';
@@ -18,6 +25,10 @@ const fill = document.createElement('div');
 fill.className = 'progress-fill';
 track.appendChild(fill);
 document.body.appendChild(track);
+
+function storageKey(name) {
+  return bookKey + '_' + name;
+}
 
 function updateProgress() {
   const h = document.documentElement;
@@ -28,8 +39,8 @@ function updateProgress() {
   const slug = document.body.getAttribute('data-slug');
   if (slug) {
     try {
-      localStorage.setItem('lifeOfGrace_lastPage', slug);
-      localStorage.setItem('lifeOfGrace_progress_' + slug, pct.toFixed(1));
+      localStorage.setItem(storageKey('lastPage'), slug);
+      localStorage.setItem(storageKey('progress_' + slug), pct.toFixed(1));
     } catch (e) {}
   }
 }
@@ -41,7 +52,7 @@ window.addEventListener('load', () => {
   const slug = document.body.getAttribute('data-slug');
   if (!slug) return;
   try {
-    const saved = localStorage.getItem('lifeOfGrace_progress_' + slug);
+    const saved = localStorage.getItem(storageKey('progress_' + slug));
     if (saved && parseFloat(saved) > 2) {
       const h = document.documentElement;
       const target = (parseFloat(saved) / 100) * (h.scrollHeight - h.clientHeight);
@@ -50,7 +61,7 @@ window.addEventListener('load', () => {
   } catch (e) {}
 });
 
-// Audio: if the file 404s, show a friendly fallback instead of a broken player
+// Audio: if a local audio file fails, show a friendly fallback.
 const player = document.getElementById('player');
 const fallback = document.getElementById('audioFallback');
 if (player) {
